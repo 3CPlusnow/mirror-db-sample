@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sql-server-container
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=mysql_P@ssword357
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./mssql_data:/var/opt/mssql
+
+  redis:
+    image: redis
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+
+  node:
+    image: node:16
+    container_name: node-container
+    depends_on:
+      - sql-server
+    volumes:
+      - ./:/usr/src/app
+    working_dir: /usr/src/app
+    command: |
+      sh -c "
+        yarn && yarn global add pm2@latest
+        pm2 start ./index.js --no-daemon --watch app --ignore-watch logs
+      "
+    ports:
+      - "3000:3000"
+    environment:
+      - SOCKET_TOKEN=$SOCKET_TOKEN
+      - SOCKET_SERVER=$SOCKET_SERVER
+
+volumes:
+  mssql_data:

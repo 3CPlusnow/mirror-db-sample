@@ -1,0 +1,6 @@
+mssql_data
+node_modules
+yarn-error.log
+.env
+info*
+error*
